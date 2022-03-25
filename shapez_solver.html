@@ -48,13 +48,13 @@
                     checked="checked"
                     onclick="onSolverOptionChanged();"
                 /><label for="min_cuts_stacks">Minimize cuts+stacks</label><br />
+                <input
+                    type="checkbox"
+                    id="single_layer_source"
+                    name="single_layer_source"
+                    onclick="onSolverOptionChanged();"
+                /><label for="single_layer_source">Any single layer can be source</label><br />
             </div>
-            <input
-                type="checkbox"
-                id="single_layer_source"
-                name="single_layer_source"
-                onclick="onSolverOptionChanged();"
-            /><label for="single_layer_source">Any single layer can be source</label><br />
         </div>
 
         <div id="error" class="hasError"></div>
@@ -1243,11 +1243,12 @@
             }
 
             function load_binary_resource(file) {
+                console.debug("Load DB file:", file);
                 document.getElementById("download_status").innerHTML = "... still downloading ...";
                 document.getElementById("code").disabled = true;
 
                 var request = new XMLHttpRequest();
-                request.open("GET", file);
+                request.open("GET", file + "?_=" + new Date().getTime()); // use unique URL to avoid caching
                 request.responseType = "arraybuffer";
                 request.onreadystatechange = function () {
                     if (request.readyState == 4)
@@ -1266,15 +1267,20 @@
             }
 
             function onPageLoad() {
+                const DB_FILE_NAME = "db.bin";
                 document.getElementById("code").disabled = true;
-                //load_binary_resource("recipes_0_1_1.bin");
-                onSolverOptionChanged();
+                load_binary_resource(DB_FILE_NAME);
+                //  onSolverOptionChanged();
             }
 
             var g_code;
             function copyBluePrintToClipboard() {
                 var blueprint = g_recipes.bluePrintFor(g_code).toJson();
                 navigator.clipboard.writeText(blueprint);
+            }
+
+            function codeToHex(code) {
+                return code.toString(16).padStart(4, "0");
             }
 
             function onSolveButtonPressed() {
